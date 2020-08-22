@@ -4,3 +4,6 @@ token
 config.conf
 test.py
 *.pyc
+dist/
+build/
+*.egg-info
