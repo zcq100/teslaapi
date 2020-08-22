@@ -1,11 +1,11 @@
-import configparser
 import requests
 import logging
 import json
-import pickle
-import os
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
+__version__ = 1.0
+__author__ = "zcq100"
 
 
 class Connect:
@@ -28,9 +28,12 @@ class Connect:
                 "password": passwd
             }
             reps = self.post("/oauth/token", json.dumps(self.oauth))
-            logging.info(f"获取到的Token:{reps}")
+            logging.info(f"{reps}")
             access_token = reps["access_token"]
             self.__sethead(access_token)
+
+        self.vechels = [Vehicle(v, self)
+                        for v in self.get('/api/1/vehicles')['response']]
 
     def post(self, command, data={}):
         url = self.baseurl+command
@@ -52,19 +55,99 @@ class Connect:
         self.headers["Authorization"] = f"Bearer {access_token}"
 
 
-class Vehicles:
-    def __init__(self, connect):
+class Vehicle(dict):
+    def __init__(self, data, connect):
+        super(Vehicle, self).__init__(data)
         self.connect = connect
-        self._cars = []
-        self._car = None
 
-    def cars(self):
-        resp = self.connect.get("/api/1/vehicles")
-        for car in resp["response"]:
-            self._cars.append(car)
-        self._car = self._cars[0]
+    def vehicle_data(self):
+        resp = self.get("vehicle_data")
+        return resp["response"]
 
-    def info(self):
-        resp = self.connect.get(
-            "/api/1/vehicles/{id}/vehicle_data".format(self._car["id"]))
-        print(resp)
+    def data_request(self, state):
+        """获取车辆数据
+
+        Args:
+            state ([type]): climate_state,charge_state,drive_state,gui_settings,
+            vehicle_state,vehicle_config
+        Returns:
+            [type]: [description]
+        """
+        resp = self.get("data_request/{}".format(state))
+        return resp["response"]
+
+    def nearby_charging_sites(self):
+        """附近的充电桩
+
+        Returns:
+            [type]: [description]
+        """
+        resp = self.get("nearby_charging_sites")
+        return resp["response"]
+
+    def wake_up(self):
+        resp = self.post("wakeup")
+        return resp["response"]
+
+    def flash_lights(self):
+        resp = self.post("command/flash_lights")
+        return resp["response"]
+
+    def honk_horn(self):
+        resp = self.post("command/honk_horn")
+        return resp["response"]
+
+    def remote_start_drive(self):
+        resp = self.post("command/remote_start_drive")
+        return resp["response"]
+
+    def speed_limit_set_limit(self, limit_mph):
+        """设置最大限速
+        """
+        resp = self.post("command/speed_limit_set_limit",
+                         {"limit_mph": limit_mph})
+        return resp["response"]
+
+    def speed_limit_activate(self, pin):
+        """速度限制激活
+        """
+        resp = self.post("command/speed_limit_set_limit",
+                         {"pin": pin})
+        return resp["response"]
+
+    def speed_limit_deactivate(self, pin):
+        """速度限制解除
+        """
+        resp = self.post("command/speed_limit_deactivate", {"pin": pin})
+        return resp["response"]
+
+    def speed_limit_clear_pin(self, pin):
+        """限速PIN删除
+        """
+        resp = self.post("command/speed_limit_clear_pin", {"pin": pin})
+        return resp["response"]
+
+    def set_valet_mode(self, on, password):
+        """设置代客模式，70MPH and 80kW 
+        """
+        resp = self.post("command/speed_limit_clear_pin",
+                         {"on": on, "password": password})
+        return resp["response"]
+
+    def reset_valet_pin(self, pin):
+        """关闭代客模式
+        """
+        resp = self.post("command/speed_limit_clear_pin")
+        return resp["response"]
+
+    def set_sentry_mode(self, on):
+        """开启关闭情景模式
+        """
+        resp = self.post("command/set_sentry_mode", {"on": on})
+        return resp["response"]
+
+    def post(self, command, data={}):
+        return self.connect.post("/api/1/vehicles/{}/{}".format(self["id"], command), data)
+
+    def get(self, command):
+        return self.connect.get("/api/1/vehicles/{}/{}".format(self["id"], command))
