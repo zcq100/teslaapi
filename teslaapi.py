@@ -4,7 +4,7 @@ import json
 
 logging.basicConfig(level=logging.INFO)
 
-__version__ = 1.0
+__version__ = 1.2
 __author__ = "zcq100"
 
 
@@ -28,7 +28,7 @@ class Connect:
                 "password": passwd
             }
             reps = self.post("/oauth/token", json.dumps(self.oauth))
-            logging.info(f"{reps}")
+            logging.debug(f"{reps}")
             access_token = reps["access_token"]
             self.__sethead(access_token)
 
