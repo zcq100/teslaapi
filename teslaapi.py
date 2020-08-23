@@ -1,7 +1,7 @@
 import requests
 import logging
+import calendar,datetime
 import json
-
 logging.basicConfig(level=logging.INFO)
 
 __version__ = 1.0
@@ -28,7 +28,7 @@ class Connect:
                 "password": passwd
             }
             reps = self.post("/oauth/token", json.dumps(self.oauth))
-            logging.info(f"{reps}")
+            logging.debug(f"{reps}")
             access_token = reps["access_token"]
             self.__sethead(access_token)
 
@@ -36,6 +36,11 @@ class Connect:
                         for v in self.get('/api/1/vehicles')['response']]
 
     def post(self, command, data={}):
+        # now = calendar.timegm(datetime.datetime.now().timetuple())
+        # if now > self.expiration:
+        #     auth = requests.post("/oauth/token", data=self.oauth)
+        #     self.__sethead(auth['access_token'],
+        #                    auth['created_at'] + auth['expires_in'] - 86400)
         url = self.baseurl+command
         resp = requests.post(url, headers=self.headers, data=data)
         j = resp.json()

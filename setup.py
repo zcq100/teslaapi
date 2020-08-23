@@ -10,7 +10,7 @@ setup(
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     license="Apache License",
-    url="https://github.com/zcq100/hermes-subscribe",
+    url="https://github.com/zcq100/teslaapi",
     packages=['.'],
 
 
