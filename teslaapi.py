@@ -1,8 +1,9 @@
 import requests
 import logging
-import calendar,datetime
+import calendar
+import datetime
 import json
-logging.basicConfig(level=logging.INFO)
+
 
 __version__ = 1.2
 __author__ = "zcq100"
@@ -27,13 +28,15 @@ class Connect:
                 "email": email,
                 "password": passwd
             }
-            reps = self.post("/oauth/token", json.dumps(self.oauth))
-            logging.debug(f"{reps}")
-            access_token = reps["access_token"]
-            self.__sethead(access_token)
+            resp = self.post("/oauth/token", json.dumps(self.oauth))
+            if hasattr(resp, "access_token"):
+                access_token = resp["access_token"]
+                self.__sethead(access_token)
+            else:
+                return
 
-        self.vechels = [Vehicle(v, self)
-                        for v in self.get('/api/1/vehicles')['response']]
+        self.vehicles = [Vehicle(v, self)
+                         for v in self.get('/api/1/vehicles')['response']]
 
     def post(self, command, data={}):
         # now = calendar.timegm(datetime.datetime.now().timetuple())
