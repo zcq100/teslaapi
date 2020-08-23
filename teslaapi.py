@@ -4,7 +4,7 @@ import calendar,datetime
 import json
 logging.basicConfig(level=logging.INFO)
 
-__version__ = 1.0
+__version__ = 1.2
 __author__ = "zcq100"
 
 
