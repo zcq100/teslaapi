@@ -25,20 +25,19 @@ class Connect:
                 "password": passwd
             }
             resp = self.post("/oauth/token", json.dumps(self.oauth))
-            if hasattr(resp, "access_token"):
+
+            if resp.__contains__("access_token"):
                 access_token = resp["access_token"]
                 self.__sethead(access_token, resp["expires_in"])
-            else:
-                return
 
         self.vehicles = [Vehicle(v, self)
                          for v in self.get('/api/1/vehicles')['response']]
 
     def post(self, command, data={}):
         now = calendar.timegm(datetime.datetime.now().timetuple())
-        if now > self.expiration:
+        if now > self.expiration and command != '/oauth/token':
             auth = requests.post(
-                f"{self.baseurl}/oauth/token", data=self.oauth)
+                f"{self.baseurl}/oauth/token", data=self.oauth).json()
             self.__sethead(auth['access_token'],
                            auth['created_at'] + auth['expires_in'] - 86400)
         url = self.baseurl+command
