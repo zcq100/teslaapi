@@ -5,10 +5,10 @@
 ## Usage for a vehicle
 ```
 from teslaapi import Connect
+
 if __name__ == '__main__':
     connect=Connect("your email","your password")
-    vehicle=connect.vechels[0]
+    vehicle=connect.vehicls[0]
     result=vehicle.nearby_charging_sites()
     print(result)
-    
 ```
