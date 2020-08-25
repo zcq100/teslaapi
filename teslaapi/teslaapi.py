@@ -5,10 +5,6 @@ import datetime
 import json
 
 
-__version__ = 1.2
-__author__ = "zcq100"
-
-
 class Connect:
     def __init__(self, email, passwd, access_token=None):
         self.headers = {'User-Agent': 'app'}
@@ -29,21 +25,21 @@ class Connect:
                 "password": passwd
             }
             resp = self.post("/oauth/token", json.dumps(self.oauth))
-            if hasattr(resp, "access_token"):
+
+            if resp.__contains__("access_token"):
                 access_token = resp["access_token"]
-                self.__sethead(access_token)
-            else:
-                return
+                self.__sethead(access_token, resp["expires_in"])
 
         self.vehicles = [Vehicle(v, self)
                          for v in self.get('/api/1/vehicles')['response']]
 
     def post(self, command, data={}):
-        # now = calendar.timegm(datetime.datetime.now().timetuple())
-        # if now > self.expiration:
-        #     auth = requests.post("/oauth/token", data=self.oauth)
-        #     self.__sethead(auth['access_token'],
-        #                    auth['created_at'] + auth['expires_in'] - 86400)
+        now = calendar.timegm(datetime.datetime.now().timetuple())
+        if now > self.expiration and command != '/oauth/token':
+            auth = requests.post(
+                f"{self.baseurl}/oauth/token", data=self.oauth).json()
+            self.__sethead(auth['access_token'],
+                           auth['created_at'] + auth['expires_in'] - 86400)
         url = self.baseurl+command
         resp = requests.post(url, headers=self.headers, data=data)
         j = resp.json()
@@ -69,7 +65,7 @@ class Vehicle(dict):
         self.connect = connect
 
     def vehicle_data(self):
-        resp = self.get("vehicle_data")
+        resp = self.get_("vehicle_data")
         return resp["response"]
 
     def data_request(self, state):
@@ -81,7 +77,7 @@ class Vehicle(dict):
         Returns:
             [type]: [description]
         """
-        resp = self.get("data_request/{}".format(state))
+        resp = self.get_("data_request/{}".format(state))
         return resp["response"]
 
     def nearby_charging_sites(self):
@@ -90,7 +86,7 @@ class Vehicle(dict):
         Returns:
             [type]: [description]
         """
-        resp = self.get("nearby_charging_sites")
+        resp = self.get_("nearby_charging_sites")
         return resp["response"]
 
     def wake_up(self):
@@ -136,7 +132,7 @@ class Vehicle(dict):
         return resp["response"]
 
     def set_valet_mode(self, on, password):
-        """设置代客模式，70MPH and 80kW 
+        """设置代客模式，70MPH and 80kW
         """
         resp = self.post("command/speed_limit_clear_pin",
                          {"on": on, "password": password})
@@ -157,5 +153,5 @@ class Vehicle(dict):
     def post(self, command, data={}):
         return self.connect.post("/api/1/vehicles/{}/{}".format(self["id"], command), data)
 
-    def get(self, command):
+    def get_(self, command):
         return self.connect.get("/api/1/vehicles/{}/{}".format(self["id"], command))
