@@ -1,17 +1,17 @@
 from __future__ import print_function
 from setuptools import setup
-from teslaapi import __version__
+from teslaapi import __version__, __author__
 setup(
     name="tesla-api-py",
     version=__version__,
-    author="zcq100",
+    author=__author__,
     author_email="zcq100@gmail.com",
     description="Tesla api ",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     license="Apache License",
     url="https://github.com/zcq100/teslaapi",
-    packages=['.'],
+    packages=['teslaapi'],
 
 
     classifiers=[
