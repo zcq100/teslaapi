@@ -1,8 +1,8 @@
-import requests
-import logging
 import calendar
-import datetime
 import json
+import datetime
+import logging
+import requests
 
 
 class Connect:
@@ -33,7 +33,7 @@ class Connect:
         self.vehicles = [Vehicle(v, self)
                          for v in self.get('/api/1/vehicles')['response']]
 
-    def post(self, command, data={}):
+    def post(self, command, data=None):
         now = calendar.timegm(datetime.datetime.now().timetuple())
         if now > self.expiration and command != '/oauth/token':
             auth = requests.post(
@@ -141,7 +141,7 @@ class Vehicle(dict):
     def reset_valet_pin(self, pin):
         """关闭代客模式
         """
-        resp = self.post("command/speed_limit_clear_pin")
+        resp = self.post("command/speed_limit_clear_pin", {"pin": pin})
         return resp["response"]
 
     def set_sentry_mode(self, on):
@@ -150,7 +150,7 @@ class Vehicle(dict):
         resp = self.post("command/set_sentry_mode", {"on": on})
         return resp["response"]
 
-    def post(self, command, data={}):
+    def post(self, command, data=None):
         return self.connect.post("/api/1/vehicles/{}/{}".format(self["id"], command), data)
 
     def get_(self, command):

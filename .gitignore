@@ -1,5 +1,5 @@
 secret
-api.http
+*.http
 token
 config.conf
 test.py

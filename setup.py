@@ -11,6 +11,7 @@ setup(
     long_description_content_type="text/markdown",
     license="Apache License",
     url="https://github.com/zcq100/teslaapi",
+    python_requires=">=3.5",
     packages=['teslaapi'],
 
 
